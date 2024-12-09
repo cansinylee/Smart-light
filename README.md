@@ -1,3 +1,5 @@
+Video link:https://meeting.tencent.com/crm/KngZpvawae
+
 SMARTLIGHT SYSTEM
 
 1. Set Up the Server (VPS) to Store and manage the Light Status.
@@ -5,22 +7,24 @@ SMARTLIGHT SYSTEM
 3. Program the Pico set to connect it to VPS to get status of the light and responds accordingly.
 4. Test and Run the System
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+---
 
 1. Set Up the Server (VPS) to Store and manage the Light Status.
+
 ### **Step 1: Connect to Azure VM**
 
-
 ### **Step 2: Install Node.js on the Azure VM**
+
 Ensure that Node.js is installed on the VM.
 
 1. **Update the package list**:
+
    ```bash
    sudo apt update
    ```
 
 2. **Install Node.js and npm**:
+
    ```bash
    sudo apt install -y nodejs npm
    ```
@@ -34,87 +38,93 @@ Ensure that Node.js is installed on the VM.
 ---
 
 ### **Step 3: Set Up the Project on the VM**
+
 1. **Create a project directory**:
+
    ```bash
    mkdir light-api
    cd light-api
    ```
 
 2. **Initialize the project**:
+
    ```bash
    npm init -y
    ```
 
 3. **Install Express.js**:
+
    ```bash
    npm install express
    ```
 
 4. **Create the `app.js` file**:
+
    ```bash
    nano app.js
    ```
 
 5. **Here is the API code for `app.js`** (replace `localhost` with `0.0.0.0` to listen on all interfaces):
+
    ```javascript
-   const express = require('express');
+   const express = require("express");
    const app = express();
    const port = 3000;
 
    let lightState = false;
 
-   app.get('/set-light-on', (req, res) => {
-       lightState = true;
-       res.send({ status: "Light is ON" });
+   app.get("/set-light-on", (req, res) => {
+     lightState = true;
+     res.send({ status: "Light is ON" });
    });
 
-   app.get('/set-light-off', (req, res) => {
-       lightState = false;
-       res.send({ status: "Light is OFF" });
+   app.get("/set-light-off", (req, res) => {
+     lightState = false;
+     res.send({ status: "Light is OFF" });
    });
 
-   app.get('/get-light-status', (req, res) => {
-       res.send({ light_on: lightState });
+   app.get("/get-light-status", (req, res) => {
+     res.send({ light_on: lightState });
    });
 
-   app.listen(port, '0.0.0.0', () => {
-       console.log(`Server running on port ${port}`);
+   app.listen(port, "0.0.0.0", () => {
+     console.log(`Server running on port ${port}`);
    });
    ```
 
-6. **Save and exit**: 
-  
+6. **Save and exit**:
 
 ---
 
 ### **Step 4: Open Port 3000 in Azure**
-1. Log in to the Azure portal.
-2. Navigate to your VM's **Networking** settings.
-3. Add a new **Inbound Port Rule**:
-   - **Destination Port**: `3000`
-   - **Protocol**: TCP
-   - **Action**: Allow
-   - **Priority**: Set appropriately (e.g., `1000`).
-   - **Name**: `Allow-Port-3000`
 
+1.  Log in to the Azure portal.
+2.  Navigate to your VM's **Networking** settings.
+3.  Add a new **Inbound Port Rule**:
 
-            General Rule Configuration for HTTP (Port 3000)**:
-            | **Field**                 | **Value**                                                |
-            |---------------------------|----------------------------------------------------------|
-            | **Source**                | `Any`                                                   |
-            | **Source IP addresses/CIDR ranges** | `*` (Allow all IP addresses) or specify IP in CIDR format if we want restricted access (e.g., `203.0.113.0/24`). |
-            | **Source Port Ranges**    | `*` (Any)                                               |
-            | **Destination**           | `Any`                                                   |
-            | **Destination Port Ranges** | `3000` (The port our API server is running on)       |
-            | **Protocol**              | `TCP` (Because HTTP uses TCP)                           |
-            | **Action**                | `Allow`                                                 |
-            | **Priority**              | A low value, e.g., `100` (higher priority than other rules). |
-            | **Name**                  | A meaningful name, e.g., `Allow_HTTP_API`               |
+    - **Destination Port**: `3000`
+    - **Protocol**: TCP
+    - **Action**: Allow
+    - **Priority**: Set appropriately (e.g., `1000`).
+    - **Name**: `Allow-Port-3000`
 
+             General Rule Configuration for HTTP (Port 3000)**:
+             | **Field**                 | **Value**                                                |
+             |---------------------------|----------------------------------------------------------|
+             | **Source**                | `Any`                                                   |
+             | **Source IP addresses/CIDR ranges** | `*` (Allow all IP addresses) or specify IP in CIDR format if we want restricted access (e.g., `203.0.113.0/24`). |
+             | **Source Port Ranges**    | `*` (Any)                                               |
+             | **Destination**           | `Any`                                                   |
+             | **Destination Port Ranges** | `3000` (The port our API server is running on)       |
+             | **Protocol**              | `TCP` (Because HTTP uses TCP)                           |
+             | **Action**                | `Allow`                                                 |
+             | **Priority**              | A low value, e.g., `100` (higher priority than other rules). |
+             | **Name**                  | A meaningful name, e.g., `Allow_HTTP_API`               |
 
 ---
 
 ### **Step 5: Start the Server on the VM**
+
 1. Start the server:
    ```bash
    node app.js
@@ -127,12 +137,15 @@ Ensure that Node.js is installed on the VM.
 ---
 
 ### **Step 6: Access the API Endpoints**
+
 With VM's public IP (`20.93.3.161`), we can now access the API from anywhere.
 
 1. **Turn the light on**:
+
    - URL: `http://20.93.3.161:3000/set-light-on`
 
 2. **Turn the light off**:
+
    - URL: `http://20.93.3.161:3000/set-light-off`
 
 3. **Check the light status**:
@@ -141,9 +154,11 @@ With VM's public IP (`20.93.3.161`), we can now access the API from anywhere.
 ---
 
 ### **Step 7: Keep the Server Running**
+
 To ensure the server runs even after we disconnect from the SSH session, use **`pm2`**:
 
 #### **a. Install `pm2`**
+
 ```bash
 sudo npm install -g pm2
 pm2 start app.js
@@ -154,21 +169,17 @@ pm2 startup
 ---
 
 ### **Step 8: Test and Use the API**
+
 Use `curl`, or browser to test the endpoints.
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
+---
 
 2. Create an android app that can connect to VPS for sending request to change the light status.
 
+   Design the UI with 2 buttons (on and off)
 
-    Design the UI with 2 buttons (on and off) 
-    
 **here is the xml file code:**
+
 ```java
     <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -231,6 +242,7 @@ Use `curl`, or browser to test the endpoints.
 ```
 
 **here is the Java file code:**
+
 ```java
 
 package com.example.smartlight_final;
@@ -289,27 +301,20 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 ```
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-
-
-
-
+---
 
 3. Program the Pico set to connect it to VPS to get status of the light and responds accordingly.
 
+   3.1 **Set Up Wi-Fi and HTTP Communication**:
 
-    3.1 **Set Up Wi-Fi and HTTP Communication**:
-  
    - Use the `urequests` library in MicroPython to send HTTP requests from the Pico to the server.
 
-    3.2 **Write Code for Polling Light Status**:
+     3.2 **Write Code for Polling Light Status**:
+
    - The Raspberry Pi Pico will use **polling** to check the light’s current status by calling the `/get-light-status` endpoint.
    - If it receives a "true" status, it turns the light on; if "false," it turns the light off.
 
- 
-   
    ```python
    import urequests
    import time
@@ -343,18 +348,14 @@ public class MainActivity extends AppCompatActivity {
        time.sleep(5)  # Poll every 5 seconds
    ```
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
+---
 
 4. Test and Run the System
 
-    4.1 **Check Server and Connections**:
+   4.1 **Check Server and Connections**:
+
    - Ensure that both the Raspberry Pi Pico and the Android app can reach the server over the network.
 
-    4.2 **Verify Control Functionality**:
-   - Test turning the light on and off from the Android app and verify that the Raspberry Pi Pico responds accordingly.
+     4.2 **Verify Control Functionality**:
 
+   - Test turning the light on and off from the Android app and verify that the Raspberry Pi Pico responds accordingly.
